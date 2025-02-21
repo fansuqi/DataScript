@@ -6,17 +6,15 @@ import time
 import pandas as pd
 
 
-product = 'HO'
-
 def get_index_option_volume():
     for i in range(1, 13):
         print(i)
         for j in range(1, 32):
             try:
-                df = pd.read_csv(f'http://www.cffex.com.cn/sj/ccpm/2024{i:0>2}/{j:0>2}/{product}_1.csv', encoding='gbk')
+                df = pd.read_csv(f'http://www.cffex.com.cn/sj/ccpm/{year}{i:0>2}/{j:0>2}/{product}_1.csv', encoding='gbk')
             except:
                 time.sleep(60)
-                df = pd.read_csv(f'http://www.cffex.com.cn/sj/ccpm/2024{i:0>2}/{j:0>2}/{product}_1.csv', encoding='gbk')
+                df = pd.read_csv(f'http://www.cffex.com.cn/sj/ccpm/{year}{i:0>2}/{j:0>2}/{product}_1.csv', encoding='gbk')
             df.rename({'Unnamed: 4': 'volume', '成交量排名': 'name', '合约系列' : 'symbol'}, axis=1, inplace=True)
             if 'symbol' not in df.columns: # 判断是否正确获得数据
                 continue
@@ -31,10 +29,12 @@ def get_index_option_volume():
             df = df.groupby('name').sum()[:20]
             df.sort_values('volume', ascending=False, inplace=True)
             rst = df['volume']
-            rst.name = f'2024-{i:0>2}-{j:0>2}'
+            rst.name = f'{year}-{i:0>2}-{j:0>2}'
             yield rst
 
 
+product = 'IO'
+year = 2024
 df_rst = pd.concat(get_index_option_volume(), axis=1)
 df_rst.index.name = 'date'
-df_rst.to_csv('Y:/cffex_volume.csv')
+df_rst.to_csv(f'/Users/fansuqi/Downloads/{product}{year}.csv', encoding='utf-8')
